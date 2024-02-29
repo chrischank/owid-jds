@@ -1,19 +1,42 @@
 # OWID_JDS
+> Submitted by Christopher Yan Chak, Chan for the position of Junior Data Scientist for Our World in Data
 
 ## Overview
 
-This is your new Kedro project with Kedro-Viz setup, which was generated using `kedro 0.19.2`.
+## GOAL: Calculate both Crude Death Rate and Age-Standardised Death Rate from Age-Specific Death Rates
+### Data:
+1. UN WPP Population Estiamtes (1950-2021) (UN DESA., 2022)
+2. WHO Standard Population Distribution aggregate (Ahmad et al., 2001)
+3. Age-Specific Death Rates COPD 2019
 
-Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
+### Definitions (ONS., 2023, WHO., 2023):
+> Age-Specific Death Rates: Number of deaths in hte age group per 1,000 population in the same age group\
+> Crude Death Rate: Total deaths per 1,000 population\
+> Age-Standardised Death Rates: A weighted average of the age-specific mortality rates per 100,000 persons, where the weights are the proportions of persons in the corresponding age groups.
 
-## Rules and guidelines
+### Summary
+> 1. Crude Death Rate calculations
+Since I could not find UN WPP Population Estimate for 1950-2021 for specific country, as the Special Aggregate, which contained past data only exist for various spatial/regional/economic zones
+aggregates, I used the Standard Project to back interpolate results for 2019. Particularly, I looped through the various estimation scenarios (e.g. Medium Variant, High Variant, Zero-migration)
+and interpolated 2019 population for both Uganda and USA for each. I believe this will also demonstrate my capabilities in python and data extraction.
 
-In order to get the best out of the template:
+- I found that in both in the future projection and the interpolated results, USA and UGA tends to over-estimate their Crude Death Rates results
+- USA Crude Death Rate interpolated and sample projection were significantly higher than UGA, this is inverse of the real data obtained from the Census, although the UGA CDR is much closer to expected projections at each variants
+- Initially I thought this was a mistake on my part, but upon checking the samples [2022 to 2026] trends from the interpolation from cubic spline tracks the resulted projection
+- In reality from census results I downloaded from the USA and UGA census website, the CDR for the US is much lower than Uganda
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a [data engineering convention](https://docs.kedro.org/en/stable/faq/faq.html#what-is-data-engineering-convention)
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+> 2. Age-Standardised Death Rate
+For Age-Standardised Death Rate, I calculated from standardised 5-years interval Population Census from USA and projected data from UGA, both were sourced from respective census,
+For Uganda, the census only tallied 5-years interval up to 80+ years range, i.e. the calculation for 80-84 and 85+ cannot be made due to the aggregation, I did not want to risk
+trying to separate out the last two intervals for accuracy sake.
+
+- I found that the Age-Standardised Death Rate for both USA and UGA is as expected, where the interval Death Rate increases as age increases.
+- The Age-Standardised Death Rate is higher for UGA at younger ages but the USA overtake UGA in ASDR at interval 40-44
+
+----
+
+- I found it perplexiing that the USA have higher Death Rate in both CDR and Age-Standardised Death Rate, I feel that this might be lack of complete account of Data from the Uganda Census.
+- UGA overall lower **estimated** CDR might be attributed to younger population in general as less expected deaths in older ages.
 
 ## How to install dependencies
 
@@ -25,75 +48,15 @@ To install them, run:
 pip install -r requirements.txt
 ```
 
-## How to run your Kedro pipeline
-
-You can run your Kedro project with:
-
+To install conda env, run:
 ```
-kedro run
+conda env create --file=ds_owid_jds.yml
 ```
 
-## How to test your Kedro project
+## Layout
 
-Have a look at the files `src/tests/test_run.py` and `src/tests/pipelines/test_data_science.py` for instructions on how to write your tests. Run the tests as follows:
-
-```
-pytest
-```
-
-To configure the coverage threshold, look at the `.coveragerc` file.
-
-## Project dependencies
-
-To see and update the dependency requirements for your project use `requirements.txt`. Install the project requirements with `pip install -r requirements.txt`.
-
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
-
-## How to work with Kedro and notebooks
-
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `catalog`, `context`, `pipelines` and `session`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
-
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
-
-```
-pip install jupyter
-```
-
-After installing Jupyter, you can start a local notebook server:
-
-```
-kedro jupyter notebook
-```
-
-### JupyterLab
-To use JupyterLab, you need to install it:
-
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
-```
-kedro jupyter lab
-```
-
-### IPython
-And if you want to run an IPython session:
-
-```
-kedro ipython
-```
-
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
-
-> *Note:* Your output cells will be retained locally.
-
-[Further information about using notebooks for experiments within Kedro projects](https://docs.kedro.org/en/develop/notebooks_and_ipython/kedro_and_notebooks.html).
-## Package your Kedro project
-
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html).
+- Kedro file layout were used, kedro pipeline not tested
+- Notebooks are located in ```./notebooks/EDA.ipynb``` notebooks are ran in relative paths
+- Raw data are located (not tracked in git) ```./data/01_raw```
+- Result data are located in ```./data/07_model_output```
+- Plots output are located in ```./docs```
